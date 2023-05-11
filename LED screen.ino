@@ -40,13 +40,11 @@ void loop()
   lcd.print(timeLeft);
   lcd.print(" s left.");
 
-//How many are red or green
+  //How many are red or green
   float fraction = millis()/timeMilliSec;
   float numbRed = (1 - fraction)*NUM_LEDS;
   int numbLitGreen = round(NUM_LEDS - numbRed);
   int numbLitRed = NUM_LEDS - numbLitGreen ;
-
-  /////Fix voltage difference for different LEDs causeing different brightness
   for(int i=0; i<numbLitGreen; i++){
     leds[i].setRGB(0, 125, 0);//green
     delay(100);
