@@ -29,7 +29,7 @@ int LED = 8;
 float switchingfrequency = 0.1;        // In Hertz
 int mosfetgate = 13;                // connected to pin 13 for the gate of the N-type mosfet
 int mosfetgate10 = 12;
-int pmos = A1;
+int check_volt = A1;
 int potential_divider = A0;
 
 
@@ -37,11 +37,11 @@ float period = 1/switchingfrequency;          // Getting the time for each cycle
 float dutyCycle = 0.5;                        // Duty Cycle
 float on_time = period * dutyCycle; 
 float off_time = period * ( 1 - dutyCycle);
-float pmosValue;
-float pmosVoltage;
+float checkValue;
+float checkVoltage;
 float potentialValue;
 float potentialVoltage;
-float rail_voltage = 5.04;
+float rail_voltage = 18;
 float point = 1024.0;
 
 
@@ -49,30 +49,34 @@ float point = 1024.0;
 void setup() {
   // initialize the inputs and outputs
   pinMode(LED, OUTPUT);
-  pinMode(pmos, INPUT);
+  pinMode(mosfetgate, OUTPUT);
+  pinMode(check_volt, INPUT);
+  pinMode(potential_divider, INPUT);
   // initialize serial communication at 9600 bits per second:
   Serial.begin(9600);
 }
 
 void loop() {
   // read value from the sensor:
-  pmosValue = (float)analogRead(pmos);
-  pmosVoltage = (pmosValue * rail_voltage) / point ;
-  potentialValue = (float)analogRead(pmos);
-  potentialVoltage = (pmosValue * rail_voltage) / point ;
+  checkValue = (float)analogRead(check_volt);
+  checkVoltage = (checkValue * rail_voltage) / point ;
+  potentialValue = (float)analogRead(potential_divider);
+  potentialVoltage = (potentialValue * rail_voltage) / point ;
   // read the voltages   
   digitalWrite(mosfetgate, HIGH); // turn the MOSFET on
   digitalWrite(LED, HIGH); // turn the MOSFET on
-  Serial.println(pmosVoltage); // Print the value to the serial monitor
-  delay(1000);
+  Serial.println(potentialVoltage); // Print the value to the serial monitor
+  delay(300);
 
-  pmosValue = (float)analogRead(pmos);
-  pmosVoltage = (pmosValue * rail_voltage) / point ;
-  potentialValue = (float)analogRead(pmos);
-  potentialVoltage = (pmosValue * rail_voltage) / point ;
+  // read value from the sensor:
+  checkValue = (float)analogRead(check_volt);
+  checkVoltage = (checkValue * rail_voltage) / point ;
+  potentialValue = (float)analogRead(potential_divider);
+  potentialVoltage = (potentialValue * rail_voltage) / point ;
+  // read the voltages   
   digitalWrite(mosfetgate, LOW); // turn the MOSFET on
   digitalWrite(LED, LOW); // turn the MOSFET on
-  Serial.println(pmosVoltage); // Print the value to the serial monitor
-  delay(1000);
+  Serial.println(potentialVoltage); // Print the value to the serial monitor
+  delay(300);
   
 }
