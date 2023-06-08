@@ -1,5 +1,3 @@
-#include <eRCaGuy_NewAnalogRead.h>
-
 /*
   Arduino Starter Kit example
   Project 10 - Zoetrope
@@ -23,9 +21,6 @@
   This example code is part of the public domain.
 */
 
-//include the library
-#include <eRCaGuy_NewanalogRead.h>
-
 // const int mosfetgate = 13;                // connected to pin 13 for the gate of the N-type mosfet
 // const int mosfetgate10 = 12;                // connected to pin 12 for the gate of the N-type mosfet
 // const int mosfetgate100 = 11;                // connected to pin 11 for the gate of the N-type mosfet
@@ -35,6 +30,7 @@ float switchingfrequency = 0.1;        // In Hertz
 int mosfetgate = 13;                // connected to pin 13 for the gate of the N-type mosfet
 int mosfetgate10 = 12;
 int pmos = A1;
+int potential_divider = A0;
 
 
 float period = 1/switchingfrequency;          // Getting the time for each cycle
@@ -43,6 +39,8 @@ float on_time = period * dutyCycle;
 float off_time = period * ( 1 - dutyCycle);
 float pmosValue;
 float pmosVoltage;
+float potentialValue;
+float potentialVoltage;
 float rail_voltage = 5.04;
 float point = 1024.0;
 
@@ -60,6 +58,8 @@ void loop() {
   // read value from the sensor:
   pmosValue = (float)analogRead(pmos);
   pmosVoltage = (pmosValue * rail_voltage) / point ;
+  potentialValue = (float)analogRead(pmos);
+  potentialVoltage = (pmosValue * rail_voltage) / point ;
   // read the voltages   
   digitalWrite(mosfetgate, HIGH); // turn the MOSFET on
   digitalWrite(LED, HIGH); // turn the MOSFET on
@@ -68,6 +68,8 @@ void loop() {
 
   pmosValue = (float)analogRead(pmos);
   pmosVoltage = (pmosValue * rail_voltage) / point ;
+  potentialValue = (float)analogRead(pmos);
+  potentialVoltage = (pmosValue * rail_voltage) / point ;
   digitalWrite(mosfetgate, LOW); // turn the MOSFET on
   digitalWrite(LED, LOW); // turn the MOSFET on
   Serial.println(pmosVoltage); // Print the value to the serial monitor
