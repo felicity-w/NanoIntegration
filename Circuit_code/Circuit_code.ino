@@ -26,17 +26,23 @@
 //include the library
 #include <eRCaGuy_NewanalogRead.h>
 
-const int mosfetgate = 11;                // connected to pin 13 for the gate of the N-type mosfet
+const int mosfetgate = 13;                // connected to pin 13 for the gate of the N-type mosfet
+const int mosfetgate10 = 12;                // connected to pin 12 for the gate of the N-type mosfet
+const int mosfetgate100 = 11;                // connected to pin 11 for the gate of the N-type mosfet
+const int mosfetgate1000 = 10;                // connected to pin 10 for the gate of the N-type mosfet
+const int LED = 8;
 // const int resistorA1Pin = A0;              // connected to the 1 ohm resistor before the resistor
 // const int resistorA2Pin = A1;              // connected to the 1 ohm resistor after the resistor
 // const int resistorB1Pin = A2;              // connected to the lower 1ohm resistor before the resistor
 // const int mosfetPin = A3; 
 const float inputvoltage = 5.00;            // Input voltage of the circuit
-const int switchingfrequency = 100;        // In Hertz
+const int switchingfrequency = 0.1;        // In Hertz
 const float resistorA = 10;                  // Resistor value
 const float resistorB = 10;
 float period = 1/switchingfrequency;          // Getting the time for each cycle
 float dutyCycle = 0.5;                        // Duty Cycle
+float on_time = period * dutyCycle; 
+float off_time = period * ( 1 - dutyCycle); 
 int counter = 0;                            // a counter variable to count the loops
 String p1 = ";";
 int bits_of_precision = 16; //must be a value between 10 and 21
@@ -85,7 +91,11 @@ void setup() {
   pinMode(resistorA2Pin, INPUT);
   pinMode(resistorB1Pin, INPUT);
   pinMode(mosfetPin, INPUT);
+  pinMode(LED, OUTPUT);
   pinMode(mosfetgate, OUTPUT);
+  pinMode(mosfetgate1000, OUTPUT);
+  pinMode(mosfetgate100, OUTPUT);
+  pinMode(mosfetgate10, OUTPUT);
 
   // initialize serial communication at 9600 bits per second:
   Serial.begin(1200);
@@ -101,11 +111,17 @@ void loop() {
   // read the voltages   
 
   //local variables
-  unsigned long analogReading;
+  // unsigned long analogReading;
 
   digitalWrite(mosfetgate, HIGH); // turn the MOSFET on
+  digitalWrite(mosfetgate1000, LOW); // turn the MOSFET on
+  digitalWrite(mosfetgate100, LOW); // turn the MOSFET on
+  digitalWrite(mosfetgate10, HIGH); // turn the MOSFET on
+  digitalWrite(LED, HIGH); // turn the MOSFET on
   float voltageA1 = adc.newAnalogRead(resistorA1Pin)*inputvoltage/adc.getMaxPossibleReading(); //voltage at the front of resistor A
   float voltageA2 = adc.newAnalogRead(resistorA2Pin)*inputvoltage/adc.getMaxPossibleReading(); //voltage at the back of resistor A
+  // float voltageB = analogRead(resistorB1Pin)*inputvoltage/1024; // Find voltage at B pin
+  // float currentB = voltageB/100; // Calculate the current through the 100 ohm resistor
   // float voltageB1 = adc.newAnalogRead(resistorB1Pin)*inputvoltage/adc.getMaxPossibleReading(); //voltage at the front of resistor B
   // float voltageM = adc.newAnalogRead(mosfetPin)*inputvoltage/adc.getMaxPossibleReading(); //voltage at the front of MOSFET gate
   float currentA = (voltageA1 - voltageA2)/resistorA; // Current through resistor A
@@ -114,18 +130,21 @@ void loop() {
   // Serial.print("CurrentA: ");
   // Serial.println(currentA*1000,6); //displays current through resistor A in mA
   Serial.print("Current: ");
-  Serial.println(currentA,6); //displays current through resistor A in mA
+  Serial.println(currentA); //displays current through resistor A in mA
 
-  delay(dutyCycle*period);
+  delay(on_time*1000);
 
   digitalWrite(mosfetgate, LOW); // turn the MOSFET on
+  digitalWrite(LED, LOW); // turn the MOSFET on
   voltageA1 = adc.newAnalogRead(resistorA1Pin)*inputvoltage/adc.getMaxPossibleReading(); //voltage at the front of resistor A
   voltageA2 = adc.newAnalogRead(resistorA2Pin)*inputvoltage/adc.getMaxPossibleReading(); //voltage at the back of resistor A
   currentA = (voltageA1 - voltageA2)/resistorA;
+  // voltageB = analogRead(resistorB1Pin)*inputvoltage/1024; // Find voltage at B pin
+  // currentB = voltageB/100; // Calculate the current through the 100 ohm resistor
   Serial.print("Current: ");
-  Serial.println(currentA,6); //displays current through resistor A in mA
+  Serial.println(currentA); //displays current through resistor A in mA
 
-  delay(1 - dutyCycle*period);
+  delay(off_time*1000);
 
 
 
