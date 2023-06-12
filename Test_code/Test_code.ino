@@ -21,19 +21,19 @@
   This example code is part of the public domain.
 */
 
-// const int mosfetgate = 13;                // connected to pin 13 for the gate of the N-type mosfet
-// const int mosfetgate10 = 12;                // connected to pin 12 for the gate of the N-type mosfet
-// const int mosfetgate100 = 11;                // connected to pin 11 for the gate of the N-type mosfet
-// const int mosfetgate1000 = 10;                // connected to pin 10 for the gate of the N-type mosfet
+
+
 int LED = 8;
-float switchingfrequency = 0.1;        // In Hertz
-int mosfetgate = 13;                // connected to pin 13 for the gate of the N-type mosfet
-int mosfetgate10 = 12;
+float switchingfrequency = 0.1;             // In Hertz
+const int mosfetgate = 13;               // connected to pin 13 for the gate of the N-type mosfet
+// const int mosfetgate10 = 12;             // connected to pin 12 for the gate of the N-type mosfet
+// const int mosfetgate100 = 11;            // connected to pin 11 for the gate of the N-type mosfet
+// const int mosfetgate1000 = 10;           // connected to pin 10 for the gate of the N-type mosfet  
 int check_volt = A1;
 int potential_divider = A0;
 
 
-float period = 1/switchingfrequency;          // Getting the time for each cycle
+float period = 1000/switchingfrequency;          // Getting the time for each cycle
 float dutyCycle = 0.5;                        // Duty Cycle
 float on_time = period * dutyCycle; 
 float off_time = period * ( 1 - dutyCycle);
@@ -41,9 +41,15 @@ float checkValue;
 float checkVoltage;
 float potentialValue;
 float potentialVoltage;
-float rail_voltage = 18;
+float rail_voltage = 5;
 float point = 1024.0;
 
+float previousReadTime = 0;
+float previousWriteTime = 0;
+float mosfetOnTime = 100;   // LED on time in milliseconds
+float mosfetOffTime = 90000;  // LED off time in milliseconds
+bool mosfetState = LOW;
+bool LEDState = LOW;
 
 
 void setup() {
@@ -57,26 +63,52 @@ void setup() {
 }
 
 void loop() {
-  // read value from the sensor:
-  checkValue = (float)analogRead(check_volt);
-  checkVoltage = (checkValue * rail_voltage) / point ;
-  potentialValue = (float)analogRead(potential_divider);
-  potentialVoltage = (potentialValue * rail_voltage) / point ;
-  // read the voltages   
-  digitalWrite(mosfetgate, HIGH); // turn the MOSFET on
-  digitalWrite(LED, HIGH); // turn the MOSFET on
-  Serial.println(potentialVoltage); // Print the value to the serial monitor
-  delay(300);
+  // Analog read at 1ms rate
+  float currentReadTime = micros();
+  if (currentReadTime - previousReadTime >= 1000) { //setting the timing of how frequent you read the value
+    previousReadTime = currentReadTime;
 
-  // read value from the sensor:
-  checkValue = (float)analogRead(check_volt);
-  checkVoltage = (checkValue * rail_voltage) / point ;
-  potentialValue = (float)analogRead(potential_divider);
-  potentialVoltage = (potentialValue * rail_voltage) / point ;
-  // read the voltages   
-  digitalWrite(mosfetgate, LOW); // turn the MOSFET on
-  digitalWrite(LED, LOW); // turn the MOSFET on
-  Serial.println(potentialVoltage); // Print the value to the serial monitor
-  delay(300);
-  
+    // read values from the sensor:
+    checkValue = (float)analogRead(check_volt);
+    checkVoltage = (checkValue * rail_voltage) / point ;
+    potentialValue = (float)analogRead(potential_divider);
+    potentialVoltage = (potentialValue * rail_voltage) / point ;
+    Serial.println(checkVoltage); // Print the value to the serial monitor
+  }
+
+  // LED control
+  float currentWriteTime = micros();
+  if (mosfetState == LOW) {
+    // LED is currently off
+    if (currentWriteTime - previousWriteTime >= mosfetOffTime) {
+      previousWriteTime = currentWriteTime;
+
+      // Turn on the MOSFET
+      digitalWrite(mosfetgate, HIGH);
+      mosfetState = HIGH;
+
+      // Turn the LED ON
+      digitalWrite(LED, HIGH);
+      LEDState = HIGH;
+
+      // Update the LED on time based on the dynamic value
+      // mosfetOnTime = dynamicValue;
+    }
+  } else {
+    // LED is currently on
+    if (currentWriteTime - previousWriteTime >= mosfetOnTime) {
+      previousWriteTime = currentWriteTime;
+
+      // Turn off the MOSFET
+      digitalWrite(mosfetgate, LOW);
+      mosfetState = LOW;
+
+      // Turn the LED ON
+      digitalWrite(LED, LOW);
+      LEDState = LOW;
+
+      // Update the LED off time based on the dynamic value
+      // ledOffTime = dynamicValue;
+    }
+  }
 }
