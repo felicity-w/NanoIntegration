@@ -23,7 +23,7 @@
 
 
 
-int LED = 8;
+int LED = 4;
 const int mosfetgate = 13;               // connected to pin 13 for the gate of the N-type mosfet
 int volt_1000 = A1;
 // int volt_100 = A2;;
