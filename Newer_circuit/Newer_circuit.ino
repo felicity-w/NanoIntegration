@@ -19,7 +19,7 @@
 
 */
 
-const int LED = 8;  // connected to pin 8 for the LED circuit
+const int LED = 4;  // connected to pin 8 for the LED circuit
 const int mosfetgate = 13;  // connected to pin 13 for the gate of the N-type mosfet
 int volt_1000 = A1; // Input for the voltage detection for the current detector is in pin A1
 int volt_buck = A0; // Input for the voltage after the buck circuit is connected to pin A0
