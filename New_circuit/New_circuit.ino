@@ -24,42 +24,63 @@
 
 
 int LED = 8;
-float switchingfrequency = 0.1;             // In Hertz
 const int mosfetgate = 13;               // connected to pin 13 for the gate of the N-type mosfet
-// const int mosfetgate10 = 12;             // connected to pin 12 for the gate of the N-type mosfet
-// const int mosfetgate100 = 11;            // connected to pin 11 for the gate of the N-type mosfet
-// const int mosfetgate1000 = 10;           // connected to pin 10 for the gate of the N-type mosfet  
-int check_volt = A1;
-int potential_divider = A0;
+int volt_1000 = A1;
+// int volt_100 = A2;;
+// int volt_11 = A1;
+int volt_circuit = A0;
 
-
-float period = 1000/switchingfrequency;          // Getting the time for each cycle
-float dutyCycle = 0.5;                        // Duty Cycle
-float on_time = period * dutyCycle; 
-float off_time = period * ( 1 - dutyCycle);
-float checkValue;
-float checkVoltage;
-float potentialValue;
-float potentialVoltage;
-float rail_voltage = 5;
+float raw_volt_1000;
+float raw_volt_100;
+float raw_volt_11;
+float raw_volt_circuit;
+float act_volt_1000;
+float act_volt_100;
+float act_volt_11;
+float act_volt_circuit;
+float current_1000;
+float current_100;
+float current_11;
+float rail_voltage = 18;
 float point = 1024.0;
+float current_setpoint = 300; // In microamps
 
 float previousReadTime = 0;
 float previousWriteTime = 0;
-float mosfetOnTime = 100;   // LED on time in milliseconds
-float mosfetOffTime = 90000;  // LED off time in milliseconds
+float mosfetOnTime = 100;   // LED on time in microseconds
+float mosfetOffTime = 10000;  // LED off time in microseconds
 bool mosfetState = LOW;
 bool LEDState = LOW;
+bool mosfet1000State = HIGH;
 
+// Constants
+const float Kp = 1.0;  // Proportional gain
+const float Ki = 0.5;  // Integral gain
+const float Kd = 0.2;  // Derivative gain
+
+// Variables
+float setpoint = 50.0;  // Desired setpoint must be between 150 and 800
+float time_setpoint = 0;
+float time_input = 0;
+float input = 0.0;      // Actual system measurement
+float output = 0.0;     // Control output
+
+float error = 0.0;      // Error (difference between setpoint and input)
+float lastError = 0.0;  // Previous error
+float proportional = 0.0;
+float integral = 0.0;   // Integral term (accumulated error)
+float derivative = 0.0; // Derivative term (rate of change of error)
 
 void setup() {
   // initialize the inputs and outputs
   pinMode(LED, OUTPUT);
   pinMode(mosfetgate, OUTPUT);
-  pinMode(check_volt, INPUT);
-  pinMode(potential_divider, INPUT);
+  pinMode(volt_1000, INPUT);
+  // pinMode(volt_100, INPUT);
+  // pinMode(volt_11, INPUT);
+  pinMode(volt_circuit, INPUT);
   // initialize serial communication at 9600 bits per second:
-  Serial.begin(9600);
+  Serial.begin(2000000);
 }
 
 void loop() {
@@ -69,11 +90,36 @@ void loop() {
     previousReadTime = currentReadTime;
 
     // read values from the sensor:
-    checkValue = (float)analogRead(check_volt);
-    checkVoltage = (checkValue * rail_voltage) / point ;
-    potentialValue = (float)analogRead(potential_divider);
-    potentialVoltage = (potentialValue * rail_voltage) / point ;
-    Serial.println(checkVoltage); // Print the value to the serial monitor
+    raw_volt_1000 = (float)analogRead(volt_1000);
+    act_volt_1000 = (raw_volt_1000 * rail_voltage) / point;
+    // raw_volt_100 = (float)analogRead(volt_1000);
+    // act_volt_100 = (raw_volt_100 * rail_voltage) / point;
+    // raw_volt_11 = (float)analogRead(volt_1000);
+    // act_volt_11 = (raw_volt_11 * rail_voltage) / point;
+    raw_volt_circuit = (float)analogRead(volt_circuit);
+    act_volt_circuit = (raw_volt_circuit * rail_voltage) / point;
+    current_1000 = act_volt_1000 / 1000;
+    // current_100 = act_volt_100 / 100;
+    // current_11 = act_volt_11 / 11;
+    Serial.print(act_volt_circuit * 100); // Print the voltage before the 1k resistor
+    Serial.print(",");
+    Serial.println(current_1000 * 1000000, 3); // Print the voltage of the circuit - 1K resistance? in uA
+    // Serial.println(current_100); // Print the voltage of the circuit - 1K resistance?
+    // Serial.print(",");
+    // Serial.println(current_11); // Print the voltage of the circuit - 1K resistance?
+    // Serial.print(",");
+    time_setpoint = 54664 * pow(2.71828, -0.005 * current_setpoint) + 0;
+    time_input = 54664 * pow(2.71828, -0.005 * current_1000 * 1000000) + 0;
+    error = time_setpoint - time_input;
+    proportional = Kp * error;
+    integral += Ki * error;
+    derivative = Kd * (error - lastError);
+    output = proportional + integral + derivative;
+    mosfetOffTime = output;
+    lastError = error;
+    // Serial.println(',');
+    // Serial.println(error, 6); // Print the voltage of the circuit - 1K resistance? in uA
+    // Serial.println(',');
   }
 
   // LED control

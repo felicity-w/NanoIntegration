@@ -46,8 +46,8 @@ float point = 1024.0;
 
 float previousReadTime = 0;
 float previousWriteTime = 0;
-float mosfetOnTime = 100;   // LED on time in milliseconds
-float mosfetOffTime = 90000;  // LED off time in milliseconds
+float mosfetOnTime = 10;   // LED on time in milliseconds
+float mosfetOffTime = 5000;  // LED off time in milliseconds
 bool mosfetState = LOW;
 bool LEDState = LOW;
 
@@ -59,7 +59,7 @@ void setup() {
   pinMode(check_volt, INPUT);
   pinMode(potential_divider, INPUT);
   // initialize serial communication at 9600 bits per second:
-  Serial.begin(9600);
+  Serial.begin(2000000);
 }
 
 void loop() {
